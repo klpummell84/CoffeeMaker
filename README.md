@@ -15,3 +15,21 @@ Recomended command line argument:
 
 -open 'dist' folder
 -run main.exe
+
+COMMAND LIST:
+
+Drink Orders:
+
+espresso: brew an espresso drink
+latte: brew a latte drink
+cappuccino: brew a cappuccino drink
+
+Service commands:
+
+clear: clear the screen
+off: exit the program (shut the coffee maker off)
+report: display current machine resources
+restock: restocks all resources (water, milk, coffee)
+restock -water: restocks the water
+restock -milk: restocks the milk
+restock -coffee: restocks the coffee
