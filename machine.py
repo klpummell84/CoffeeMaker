@@ -30,14 +30,8 @@ RESOURCES = {
   "water": 300,
   "milk": 200,
   "coffee": 100,
-  "money": 0,
 }
-COINS = {
-  "quarters": 0.25,
-  "dimes": 0.10,
-  "nickels": 0.05,
-  "pennies": 0.01,
-}
+
 # GLOBAL machine methods:
 def clear_screen():
     if name.lower() == 'nt':
@@ -46,60 +40,75 @@ def clear_screen():
         system('clear')
 
 # CoffeeMachine class:
-class CoffeeMachine:
-    """The coffee machine class"""
-    def __init__(self, menu, resources, is_on, has_payment=False):
-        self.menu = menu
-        self.resources = resources
-        self.is_on = is_on
-        self.has_payment = has_payment
+def get_money():
 
-    def get_money(self):
+    valid = False
+
+    def invalid():
+        print("Invalid entry, returning coins and resetting...")
+
+    while not valid:
         print("Please insert coins.")
         q = input("how many quarters?: ")
         if q.isdigit():
             q = int(q)
         else:
-            print("Invalid entry, returning coins and resetting...")
-            return
+            invalid()
+            continue
         d = input("how many dimes?: ")
         if d.isdigit():
             d = int(d)
         else:
-            print("Invalid entry, returning coins and resetting...")
-            return
+            invalid()
+            continue
         n = input("how many nickels?: ")
         if n.isdigit():
             n = int(n)
         else:
-            print("Invalid entry, returning coins and resetting...")
-            return
+            invalid()
+            continue
         p = input("how many pennies?: ")
         if p.isdigit():
             p = int(p)
         else:
-            print("Invalid entry, returning coins and resetting...")
-            return
+            invalid()
+            continue
+        valid = True
+    total = 0.25 * q + 0.1 * d + 0.05 * n + 0.01 * p
+    return total
 
-        self.has_payment = True
-        total = COINS["quarters"] * q + COINS["dimes"] * d + COINS["nickels"] * n + COINS["pennies"] * p
-        return total
+
+class CoffeeMachine:
+    """The coffee machine class"""
+    def __init__(self, menu, resources, is_on, till=0):
+        self.menu = menu
+        self.resources = resources
+        self.is_on = is_on
+        self.till = till
 
     def report(self):
         water = self.resources["water"]
         milk = self.resources["milk"]
         coffee = self.resources["coffee"]
-        till = self.resources["money"]
-        return "Water: {} ml\nMilk: {} ml\nCoffee: {} g\nMoney: ${}".format(water, milk, coffee, round(till, 2))
+        till = self.till
+        return "Water: {} ml\nMilk: {} ml\nCoffee: {} g\nMoney: ${}".format(water, milk, coffee, till)
 
     def restock(self, item=""):
         if item != "":
             self.resources[item] = RESOURCES[item]
             return
         for i in self.resources:
-            if i == 'money':
-                continue
             self.resources[i] = RESOURCES[i]
+
+    def validate_payment(self, payment, cost):
+        if payment >= cost:
+            change = round(payment - cost, 2)
+            if change > 0:
+                print("Here is ${:,.2f} in change.".format(change))
+            self.till += cost
+            return True
+        print("You're short on payment, refund given.")
+        return False
 
     def choose_action(self, action):
         if action == 'off':
@@ -121,38 +130,23 @@ class CoffeeMachine:
         elif action == 'clear':
             clear_screen()
         elif action in self.menu:
-            self.check_supply(action)
+            if self.check_supply(self.menu[action]["ingredients"]):
+                drink = self.menu[action]
+                payment = get_money()
+                if self.validate_payment(payment, drink["cost"]):
+                    self.brew_coffee(drink, action)
         else:
             print("Invalid entry, try again...")
 
-    def check_supply(self, drink):
-        self.has_payment = False
-        for i in self.menu[drink]["ingredients"]:
-            if not self.resources[i] >= self.menu[drink]["ingredients"][i]:
-                print("There is not enough {}.".format(i))
-                return
-            else:
-                continue
-        paid = 0
-        while not self.has_payment:
-            paid = self.get_money()
-        if paid >= self.menu[drink]["cost"]:
-            ingredients = self.menu[drink]["ingredients"]
-            for i in ingredients:
-                self.resources[i] -= self.menu[drink]["ingredients"][i]
-            self.brew_coffee(drink=drink, payment=paid)
-            return
-        else:
-            print("Insufficient funds, refund given.")
-            return
+    def check_supply(self, ingredients):
+        for i in ingredients:
+            if ingredients[i] > self.resources[i]:
+                print("Sorry, there is not enough {}.".format(i))
+                return False
+        return True
 
-    def brew_coffee(self, drink, payment):
+    def brew_coffee(self, drink, drink_name):
         print("brewing...")
-        change = payment - self.menu[drink]["cost"]
-        change = round(change, 2)
-        # print(self.report())
-        if change > float(0):
-            payment -= change
-            print("Here is ${} in change.".format(change))
-        self.resources["money"] += payment
-        print("Here is your {}. Enjoy!".format(drink))  # ☕
+        for i in drink["ingredients"]:
+            self.resources[i] -= drink["ingredients"][i]
+        print("Here is your {}. Enjoy!".format(drink_name))  # ☕
