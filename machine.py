@@ -39,9 +39,10 @@ def clear_screen():
     else:
         system('clear')
 
-# CoffeeMachine class:
-def get_money():
 
+# noinspection PyUnboundLocalVariable
+def get_money():
+    """Get the payment for the drink"""
     valid = False
 
     def invalid():
@@ -77,7 +78,7 @@ def get_money():
     total = 0.25 * q + 0.1 * d + 0.05 * n + 0.01 * p
     return total
 
-
+# CoffeeMachine class:
 class CoffeeMachine:
     """The coffee machine class"""
     def __init__(self, menu, resources, is_on, till=0):
@@ -91,7 +92,7 @@ class CoffeeMachine:
         milk = self.resources["milk"]
         coffee = self.resources["coffee"]
         till = self.till
-        return "Water: {} ml\nMilk: {} ml\nCoffee: {} g\nMoney: ${}".format(water, milk, coffee, till)
+        return "Water: {} ml\nMilk: {} ml\nCoffee: {} g\nMoney: ${:,.2f}".format(water, milk, coffee, till)
 
     def restock(self, item=""):
         if item != "":
