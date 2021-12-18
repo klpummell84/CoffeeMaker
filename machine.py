@@ -81,9 +81,9 @@ def get_money():
 # CoffeeMachine class:
 class CoffeeMachine:
     """The coffee machine class"""
-    def __init__(self, menu, resources, is_on, till=0):
-        self.menu = menu
-        self.resources = resources
+    def __init__(self, is_on, till=0):
+        self.menu = dict(MENU)
+        self.resources = dict(RESOURCES)
         self.is_on = is_on
         self.till = till
 
